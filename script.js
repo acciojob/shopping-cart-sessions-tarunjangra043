@@ -36,10 +36,10 @@ function saveCart(cart) {
 
 function renderCart() {
     const cart = getCart();
-    cartList.innerHTML = "";
+    cartList.innerHTML = ""; 
     cart.forEach((item) => {
         const li = document.createElement("li");
-        li.innerHTML = `${item.name} - $${item.price} x ${item.quantity} <button class="remove-from-cart-btn" data-id="${item.id}">Remove</button>`;
+        li.innerHTML = `${item.name} - $${item.price} x ${item.quantity || 1} <button class="remove-from-cart-btn" data-id="${item.id}">Remove</button>`;
         cartList.appendChild(li);
     });
 
@@ -52,14 +52,14 @@ function renderCart() {
 }
 
 function addToCart(productId) {
-    const cart = getCart();
+    let cart = getCart();
     const product = products.find(p => p.id === productId);
     if (product) {
         const existingProduct = cart.find(item => item.id === productId);
         if (existingProduct) {
-            existingProduct.quantity += 1; 
+            existingProduct.quantity += 1;  // Increment quantity if the product is already in the cart
         } else {
-            cart.push({ ...product, quantity: 1 });
+            cart.push({ ...product, quantity: 1 });  // Add new product with quantity 1
         }
         saveCart(cart);
         renderCart();
@@ -68,16 +68,9 @@ function addToCart(productId) {
 
 function removeFromCart(productId) {
     let cart = getCart();
-    const productIndex = cart.findIndex(item => item.id === productId);
-    if (productIndex !== -1) {
-        if (cart[productIndex].quantity > 1) {
-            cart[productIndex].quantity -= 1;
-        } else {
-            cart.splice(productIndex, 1);
-        }
-        saveCart(cart);
-        renderCart();
-    }
+    cart = cart.filter(item => item.id !== productId); // Remove the product entirely from the cart
+    saveCart(cart);
+    renderCart();
 }
 
 function clearCart() {
