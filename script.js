@@ -1,5 +1,3 @@
-
-
 const products = [
     { id: 1, name: "Product 1", price: 10 },
     { id: 2, name: "Product 2", price: 20 },
@@ -38,10 +36,10 @@ function saveCart(cart) {
 
 function renderCart() {
     const cart = getCart();
-    cartList.innerHTML = ""; 
+    cartList.innerHTML = "";
     cart.forEach((item) => {
         const li = document.createElement("li");
-        li.innerHTML = `${item.name} - $${item.price} <button class="remove-from-cart-btn" data-id="${item.id}">Remove</button>`;
+        li.innerHTML = `${item.name} - $${item.price} x ${item.quantity} <button class="remove-from-cart-btn" data-id="${item.id}">Remove</button>`;
         cartList.appendChild(li);
     });
 
@@ -58,19 +56,28 @@ function addToCart(productId) {
     const product = products.find(p => p.id === productId);
     if (product) {
         const existingProduct = cart.find(item => item.id === productId);
-        if (!existingProduct) {
-            cart.push(product);
-            saveCart(cart);
-            renderCart();
+        if (existingProduct) {
+            existingProduct.quantity += 1; 
+        } else {
+            cart.push({ ...product, quantity: 1 });
         }
+        saveCart(cart);
+        renderCart();
     }
 }
 
 function removeFromCart(productId) {
     let cart = getCart();
-    cart = cart.filter(item => item.id !== productId);
-    saveCart(cart);
-    renderCart();
+    const productIndex = cart.findIndex(item => item.id === productId);
+    if (productIndex !== -1) {
+        if (cart[productIndex].quantity > 1) {
+            cart[productIndex].quantity -= 1;
+        } else {
+            cart.splice(productIndex, 1);
+        }
+        saveCart(cart);
+        renderCart();
+    }
 }
 
 function clearCart() {
