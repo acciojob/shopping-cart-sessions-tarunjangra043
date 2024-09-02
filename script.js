@@ -1,84 +1,60 @@
-const products = [
-    { id: 1, name: "Product 1", price: 10 },
-    { id: 2, name: "Product 2", price: 20 },
-    { id: 3, name: "Product 3", price: 30 },
-    { id: 4, name: "Product 4", price: 40 },
-    { id: 5, name: "Product 5", price: 50 },
-];
+document.addEventListener('DOMContentLoaded', () => {
+  const fontsizeInput = document.getElementById('fontsize');
+  const fontcolorInput = document.getElementById('fontcolor');
+  const saveButton = document.querySelector('input[type="submit"]');
 
-const productList = document.getElementById("product-list");
-const cartList = document.getElementById("cart-list");
-const clearCartBtn = document.getElementById("clear-cart-btn");
+  // Load preferences from cookies
+  function loadPreferences() {
+    const fontsize = getCookie('fontsize');
+    const fontcolor = getCookie('fontcolor');
 
-function renderProducts() {
-    products.forEach((product) => {
-        const li = document.createElement("li");
-        li.innerHTML = `${product.name} - $${product.price} <button class="add-to-cart-btn" data-id="${product.id}">Add to Cart</button>`;
-        productList.appendChild(li);
-    });
-
-    document.querySelectorAll(".add-to-cart-btn").forEach(button => {
-        button.addEventListener("click", (event) => {
-            const productId = parseInt(event.target.getAttribute("data-id"));
-            addToCart(productId);
-        });
-    });
-}
-
-function getCart() {
-    const cart = sessionStorage.getItem("cart");
-    return cart ? JSON.parse(cart) : [];
-}
-
-function saveCart(cart) {
-    sessionStorage.setItem("cart", JSON.stringify(cart));
-}
-
-function renderCart() {
-    const cart = getCart();
-    cartList.innerHTML = ""; 
-    cart.forEach((item) => {
-        const li = document.createElement("li");
-        li.innerHTML = `${item.name} - $${item.price} x ${item.quantity || 1} <button class="remove-from-cart-btn" data-id="${item.id}">Remove</button>`;
-        cartList.appendChild(li);
-    });
-
-    document.querySelectorAll(".remove-from-cart-btn").forEach(button => {
-        button.addEventListener("click", (event) => {
-            const productId = parseInt(event.target.getAttribute("data-id"));
-            removeFromCart(productId);
-        });
-    });
-}
-
-function addToCart(productId) {
-    let cart = getCart();
-    const product = products.find(p => p.id === productId);
-    if (product) {
-        const existingProduct = cart.find(item => item.id === productId);
-        if (existingProduct) {
-            existingProduct.quantity += 1;  // Increment quantity if the product is already in the cart
-        } else {
-            cart.push({ ...product, quantity: 1 });  // Add new product with quantity 1
-        }
-        saveCart(cart);
-        renderCart();
+    if (fontsize) {
+      fontsizeInput.value = fontsize;
+      document.body.style.fontSize = fontsize + 'px';
     }
-}
+    if (fontcolor) {
+      fontcolorInput.value = fontcolor;
+      document.body.style.color = fontcolor;
+    }
+  }
 
-function removeFromCart(productId) {
-    let cart = getCart();
-    cart = cart.filter(item => item.id !== productId); // Remove the product entirely from the cart
-    saveCart(cart);
-    renderCart();
-}
+  // Save preferences to cookies
+  function savePreferences() {
+    const fontsize = fontsizeInput.value;
+    const fontcolor = fontcolorInput.value;
 
-function clearCart() {
-    saveCart([]);
-    renderCart();
-}
+    setCookie('fontsize', fontsize, 365);
+    setCookie('fontcolor', fontcolor, 365);
 
-renderProducts();
-renderCart();
+    document.body.style.fontSize = fontsize + 'px';
+    document.body.style.color = fontcolor;
+  }
 
-clearCartBtn.addEventListener("click", clearCart);
+  function setCookie(name, value, days) {
+    let expires = '';
+    if (days) {
+      const date = new Date();
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      expires = '; expires=' + date.toUTCString();
+    }
+    document.cookie = name + '=' + (value || '') + expires + '; path=/';
+  }
+
+  function getCookie(name) {
+    const nameEQ = name + '=';
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+      if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+  }
+
+  saveButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    savePreferences();
+  });
+
+  loadPreferences();
+});
